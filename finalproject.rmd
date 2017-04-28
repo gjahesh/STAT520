@@ -2,12 +2,11 @@
 title: "Frequentist accuracy of Bayesian Estimates"
 author: "Golnaz Jahesh"
 date: "April 16, 2017"
-output:
-  html_document:
-    fig_caption: yes
-    highlight: default
-    keep_md: yes
-    theme: readable
+output: 
+ html_document:
+   keep_md: yes
+   fig_caption: yes
+   theme: readable
 ---
 
 ```{r setup, include=FALSE}
@@ -63,7 +62,7 @@ $Theorem1$ :
 
 In this theorem The delta-method standard deviation of $\hat{\theta}$ is proved to be :
 
-$$\hat{sd} = [cov{(t(\mu),\alpha_x(\mu)|x)^\intercal} V_\hat{\mu} cov{(t(\mu),\alpha_x(\mu)|x)}]^\frac{1}{2}$$
+$$\hat{sd} = [cov(t(\mu),\alpha_x(\mu)|x)^\intercal V_\hat{\mu} cov(t(\mu),\alpha_x(\mu)|x)]^\frac{1}{2}$$
 Where $\hat{\mu}$ is the value of $\mu$ having $m_\hat{\mu} = x $.  
 
 

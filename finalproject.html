@@ -149,7 +149,7 @@ The question is how accurate is <span class="math inline">\(\hat{\theta}\)</span
 <p><span class="math inline">\(Lemma1\)</span>:</p>
 <p><span class="math display">\[\nabla_x \hat{\theta} = cov{(t(\mu),\alpha_x(\mu)|x) } \]</span> <span class="math inline">\(Theorem1\)</span> :</p>
 <p>In this theorem The delta-method standard deviation of <span class="math inline">\(\hat{\theta}\)</span> is proved to be :</p>
-<p><span class="math display">\[\hat{sd} = [cov{(t(\mu),\alpha_x(\mu)|x)^\intercal} V_\hat{\mu} cov{(t(\mu),\alpha_x(\mu)|x)}]^\frac{1}{2}\]</span> Where <span class="math inline">\(\hat{\mu}\)</span> is the value of <span class="math inline">\(\mu\)</span> having $m_ = x $.</p>
+<p><span class="math display">\[\hat{sd} = [cov(t(\mu),\alpha_x(\mu)|x)^\intercal V_\hat{\mu} cov(t(\mu),\alpha_x(\mu)|x)]^\frac{1}{2}\]</span> Where <span class="math inline">\(\hat{\mu}\)</span> is the value of <span class="math inline">\(\mu\)</span> having $m_ = x $.</p>
 <p>The most important aspect of general accuracy formula is mentioned below :</p>
 <p>Suppose that <span class="math inline">\({\mu_1, \mu_2, \mu_3, .... , \mu_B}\)</span> is a MCMC sample of size <span class="math inline">\(B\)</span> from the posterior distribution of <span class="math inline">\(\mu | x\)</span>.</p>
 <p>Each <span class="math inline">\(\mu_i\)</span> gives corresponding values of <span class="math inline">\(t(\mu)\)</span> and <span class="math inline">\(\alpha_x(\mu)\)</span>, then</p>
@@ -225,8 +225,8 @@ samples &lt;- metrop(logdensity, rep(0, 10), 20000)</code></pre>
 ## Note: no visible binding for global variable 'y0'</code></pre>
 <pre class="r"><code>theta_hat &lt;- apply(samples$batch, 2, mean)
 theta_hat</code></pre>
-<pre><code>##  [1] -0.08453502 -3.65457008  9.67901437  5.54335075 -2.32756571
-##  [6] -0.51077065 -3.16676981  1.61058558  9.17108249  1.08444860</code></pre>
+<pre><code>##  [1] -0.06131517 -3.69749203  9.60008574  5.45654511 -3.10422555
+##  [6] -0.13226045 -2.72305537  1.93151403  9.45426536  1.18665704</code></pre>
 <p>The following function <code>glogdensity()</code> calculates the posterior mode of <span class="math inline">\(\hat{\alpha}_\lambda\)</span> as described above :</p>
 <pre class="r"><code>glogdensity &lt;- function(alpha, i){
   xdat &lt;- subset(ddat,select = -y0)

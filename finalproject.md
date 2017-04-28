@@ -53,7 +53,7 @@ $Theorem1$ :
 
 In this theorem The delta-method standard deviation of $\hat{\theta}$ is proved to be :
 
-$$\hat{sd} = [cov{(t(\mu),\alpha_x(\mu)|x)^\intercal} V_\hat{\mu} cov{(t(\mu),\alpha_x(\mu)|x)}]^\frac{1}{2}$$
+$$\hat{sd} = [cov(t(\mu),\alpha_x(\mu)|x)^\intercal V_\hat{\mu} cov(t(\mu),\alpha_x(\mu)|x)]^\frac{1}{2}$$
 Where $\hat{\mu}$ is the value of $\mu$ having $m_\hat{\mu} = x $.  
 
 
@@ -222,8 +222,8 @@ theta_hat
 ```
 
 ```
-##  [1] -0.08453502 -3.65457008  9.67901437  5.54335075 -2.32756571
-##  [6] -0.51077065 -3.16676981  1.61058558  9.17108249  1.08444860
+##  [1] -0.06131517 -3.69749203  9.60008574  5.45654511 -3.10422555
+##  [6] -0.13226045 -2.72305537  1.93151403  9.45426536  1.18665704
 ```
 
 The following function `glogdensity()` calculates the posterior mode of $\hat{\alpha}_\lambda$ as described above :  
