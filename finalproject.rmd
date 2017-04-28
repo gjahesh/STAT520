@@ -1,0 +1,263 @@
+---
+title: "FFrequentist accuracy of Bayesian Estimates"
+author: "Golnaz Jahesh"
+date: "April 16, 2017"
+output:
+  html_document:
+    fig_caption: yes
+    highlight: default
+    keep_md: yes
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(knitr.table.format = 'markdown')
+```
+
+```{r}
+suppressPackageStartupMessages(library(care))
+library(stats)
+library(mcmc)
+suppressPackageStartupMessages(library(dplyr))
+```
+
+#### Introduction  
+
+There are several approaches towards statistics. In the Bayesian approach the Unknown quantities are treated probabilistically and the state of the world can always be updated.  
+In frequentist methods sampling is infinite and decision rules can be sharp.Basically in the Bayesian approach, data is observed from the realized sample, parameters are unknown and described probabilistically and most importantly data is fixed. However, in the frequentist approach data is treated as a repeatable random sample,i.e. there is "frequency". Also, underlying parameters remain constant during this repeatable process.
+In this approach , however, parameters are fixed. As well as repeatability the other important advantage of frequentist methods is that no prior information is needed prior to the model specification.
+In [1] Bradley Efron proposes computing the frquentist accuracy of $\hat{\theta}$, the posterior expectation of a parameter of a particular interest ($\theta$), regardless of it's Bayesian provenance.The posterior expectation in this case is considered as a function of $x$ where its frequentist variability is computed.
+
+#### Frequentist accuracy of Bayesian estimates and general accuracy formula   
+
+Objective Bayes methods was pioneered by Harold Jeffreys [2] based on neutral or uninformative priors. Given the observed data, updating of the prior distribution to the posterior distribution occurs via Bayes' theorem. The posterior probability of a given model may be interpreted as the support it gets based on the observed data. The highest probability model (HPM) that receives the maximum support from the data is a possible choice for model selection [3]. For large model spaces, Markov chain Monte Carlo (MCMC) algorithms are commonly used to estimate the posterior distribution over models. However, estimates of posterior probabilities of individual models based on MCMC output are not reliable because the number of MCMC samples is typically far smaller than the size of the model space. Thus, the HPM is difficult to estimate and for large model spaces it often has a very small posterior probability. An alternative to the HPM is the median probability model (MPM) of Barbieri and Berger[4], which has been shown to be the optimal model for prediction using a squared error loss function, under certain conditions.   
+
+
+The idea of Bayesian estimates is that, having observed data $x$ from a known parametric family $f_\mu(x)$, we wish to estimate $t(\mu)$, a parameter of particular interest. In the absence of relevant prior experience, we assign an uninformative prior $\pi(\mu)$.Applying Bayes rule , the posterior expectation of $t_\mu(x)$ given x:
+$$\hat{\theta} = E[t(\mu)|x]$$  
+The question is how accurate is $\hat{\theta}$ ? The obvious answer, and the one that is almost always employed, is to infer the accuracy of $\hat{\theta}$ according to the Bayes posterior distribution of $t(\mu)|x$. This would obviously be correct if $\pi(\mu)$ were based on the genuine past experience. It is not so obvious for uninformative priors. We might very well like as a point estimate, based on considerations of convenience, coherence, smoothness, admissibility or aesthetic Bayesian preference, but not trust what is after all a self-selected choice of prior as determining ’s accuracy. A simple formula is shown in Efron’s work to give the frequentist standard deviation of a Bayesian point estimate and is described below.
+
+#### General Accuracy Formula  
+
+The aim is to estimate the frequentist accuracy of a Bayes posterior expectation $\hat{\theta} = E[t(\mu)|x]$ where $t(\mu)$ is a parameter of a particular interest.
+$\mu$ is an unknown parameter vector existing in $p$ dimensional parameter space $\Omega$ with prior density $\pi(\mu)$ whereas $x$ is the data and $f_\mu(x)$ is probability distributions for $p$ dimensional data.
+$$ F={f_\mu(x),\mu\epsilon \Omega}$$
+The expectation and covariance of $x$ given $\mu$ is :
+
+$$ x \approx (m_\mu, V_\mu)$$
+Where $V_\mu$ is a $p \times p$ matrix. The Bayesian score function $\alpha_x(\mu)$ is defined as : 
+$$\alpha_x(\mu) = \nabla_x\log{f_\mu(x)}$$
+
+
+$$\alpha_x(\mu) = \nabla_x\log{f_\mu(x)}=({\frac{\partial}{\partial x_i}\log{f_\mu(x)}})^\intercal$$
+
+The _general_ format of this formula indicates that it is for _any_ prior not necessarily the uninformative ones. 
+
+In _Lemma 1_ Bradely Efron states that the posterior expectation changes with the function of $x$. Here's _Lemma 1_ :   
+
+$Lemma1$: 
+
+$$\nabla_x \hat{\theta} = cov{(t(\mu),\alpha_x(\mu)|x) } $$
+$Theorem1$ : 
+
+In this theorem The delta-method standard deviation of $\hat{\theta}$ is proved to be :
+
+$$\hat{sd} = [cov{(t(\mu),\alpha_x(\mu)|x)^\intercal} V_\hat{\mu} cov{(t(\mu),\alpha_x(\mu)|x)}]^\frac{1}{2}$$
+Where $\hat{\mu}$ is the value of $\mu$ having $m_\hat{\mu} = x $.  
+
+
+The most important aspect of general accuracy formula is mentioned below :  
+
+Suppose that  ${\mu_1, \mu_2, \mu_3, .... , \mu_B}$ is a MCMC sample of size $B$ from the posterior distribution of $\mu | x$.
+
+Each $\mu_i$ gives corresponding values of $t(\mu)$ and $\alpha_x(\mu)$, then 
+
+$$t_i = t(\mu_i)$$ 
+$$\alpha_i = \alpha_x(\mu_i)$$ 
+then the $\bar{t} = \Sigma{t_i}/B$  approximates the posterior expectation ,i.e. $\hat{\theta}$ and the following approximates the posterior covariance:
+
+ $$\hat{cov} = \Sigma (\alpha_i - \bar{\alpha})(t_i-\bar{t})/B$$ for $$i : 1..B$$
+ and $\bar{\alpha} = \Sigma \alpha_i/B$
+
+We could calculate both $\hat{\theta}$ and its frequentist standard deviation from the same simulations.
+
+The following example provides a simple example for the above implementation.
+
+#### Example : Diabetes Data
+
+Diabetes data (10 variables i.e predictors, 442 measurements) was used in the study of Efron et al. (2004) [5]. The data is standardized such that the means of all variables are zero, and all variances are equal to one. 
+
+Lets import the data first:
+
+```{r}
+ddat <- read.delim2("~/Documents/STAT520/FinalProject/data/diabetes.csv", header=TRUE, sep=",",row.names = NULL, stringsAsFactors = FALSE)
+ddat <- as.data.frame(sapply(ddat, as.numeric))
+ddat$X <- NULL
+dim(ddat)
+str(ddat)
+colnames(ddat)
+```
+
+The last column is the response where $y0$ = disease progression at one year.the predictors.
+Standardizing the predictor variables (p=10) and the response variables suggests a normal linear model : 
+
+$$y= X\alpha + e$$ with $$ e \approx N_n(0,I)$$.  
+
+Where $X$ is the $n \times p$ structure matrix .In this example n=442 (number of patients) and p=10(number of variables).  
+
+Also $y_0$ is the vector of 442 responses as shown below:
+
+```{r, warning= FALSE}
+head(ddat$y0)
+```
+
+**Note** : `library(care)` also has this description data `efron2004`.
+
+```{r}
+data(efron2004)
+dim(efron2004$x)
+colnames(efron2004$x)
+length(efron2004$y)
+```
+
+`efron2004$x` is a 422 x 10 matrix containing the measurements of the explanatory variables (age, sex, body mass, etc.). The rows contain the samples and the columns the variables. `efron2004$y` contains the response.  
+
+Park and Casella in [6] took a prior distribution for $\alpha$ to be :
+$$\pi(\alpha) = exp(-\lambda L_1(\alpha))$$
+with $L_1(\alpha)$ being the $L_1$ norm $\Sigma |\alpha_j|$ for $j=1..10$ and $\lambda$ having the value: $$\lambda = 0.37$$
+The Laplace-type prior mentioned above results in a posterior mode of a given $\alpha|y$ coinciding with the lasso estimate : 
+
+$$\hat{\alpha}_\lambda = [arg.min { ||y - X_\alpha||^2 / 2+\lambda L_1(\alpha) ] }$$
+mentioned by Tibshirani in [7].
+
+In the following section an MCMC algorithm is used to produce B=10000 samples (after burn in) $\alpha_i$ from the posterior distribution $\pi(\alpha|y)$ for $\alpha_i , i= 1, 2, 3, ..., B=10000$. The Bayes posterior expectation $\hat{\theta} = E(\gamma|y)$ for any parameter of interest $\gamma = t(\alpha)$,
+$\hat{\theta} = \Sigma t(\alpha_i) / B for i= 1.. B$.
+Basically $\gamma = t(\mu)$ is the parameter of interest with $\hat{\theta}$ being its posterior expectation.  
+
+In the following function `logdensity()` implements the liner model mentioned above, in our example B=10.  
+
+```{r}
+alpha = rep(1,10)
+
+logdensity <- function(alpha){
+xdat <- subset(ddat,select = -y0)
+ydat <- as.matrix(subset(ddat,select = y0))
+xdat <- as.matrix(xdat)
+y <- xdat%*%alpha
+err <- y - ydat
+err_sqr <- (t(err) %*% err)/2
+lambda <- 0.37
+reg_val <- sum(abs(alpha))*lambda
+final_val <- err_sqr + reg_val
+return(-final_val)
+}
+
+logdensity(alpha)
+#Markov chain Monte Carlo for continuous random vector using a Metropolis algorithm.
+samples <- metrop(logdensity, rep(0, 10), 20000)
+theta_hat <- apply(samples$batch, 2, mean)
+theta_hat
+
+```  
+
+The following function `glogdensity()` calculates the posterior mode of $\hat{\alpha}_\lambda$ as described above :  
+
+```{r}
+glogdensity <- function(alpha, i){
+  xdat <- subset(ddat,select = -y0)
+  ydat <- as.matrix(subset(ddat,select = y0))
+  xdat <- as.matrix(xdat)
+  y <- xdat%*%alpha
+  err <- y - ydat
+  lambda <- 0.37
+  temp <- alpha * err[i] + lambda*sign(alpha)
+  return(-temp)
+} 
+
+```
+
+The following function `strmat()` constructs the structure matrix $X$, considering estimating the diabetes progression for patient 125, because this patient falls near the center of the y response scale:  
+
+```{r}
+
+strmat <- matrix(, nrow = 10000, ncol = 10)
+for(row in 1:10000){
+  strmat[row, ] <- glogdensity(samples$batch[row,],125)
+}
+```
+
+The following piece of code was obtained from supplemental material from of Bradley Efron's paper [8].  
+The parameters of function `freqacc()` is described below : 
+
+##### Frequentist standard deviations of Bayes estimates. For exponential
+    ##  Frequentist standard deviations of Bayes estimates. For exponential    
+    ##  family models as in (3.1) of paper; applies both to MCMC
+    ##    sampling as in section 2 or bootstrap sampling section 3.
+    ## tt is vector of B simulation values of parameter of interest,
+    ##    as in (2.12) of paper, either from MCMC, section 2 or
+    ##    bootstrap, section 3.
+    ## aa is B by p matrix of simulated row p-vectors alpha.subx(mu),(2.12),
+    ##    or natural parameter vectors alpha as in exponential family
+    ##    bootstrap implementation, as following (3.10).
+    ## pp is B vector with elements p[i] (3.7) in bootstrap implementation
+    ##    or rep(1,B) in MCMC implementation.
+    ## V is mle estimate of the variance of the sufficient vector betahat
+    ##    in (3.1); set to V=solve(var(aa)) if missing.
+    ##
+    ## Returns Bayes posterior estimate Ebayes "thetahat", (2.27) or (3.8),
+    ##    its frequentist delta-method standard deviation, (2.8) or (3.11),
+    ##    "cv", the internal coefficient of variation of Ebayes, (3.12)
+    ##    [if using bootstrap implementation], and the usual Bayes
+    ##    estimate of standard deviation of Ebayes.  B.Efron 2/8/14
+
+
+```{r}
+freqacc <- function(tt, aa, pp=rep(1,B), V, sw=0) {
+    
+    if (missing(V)) V <- solve(var(aa)) #only applies in bootstrap case.
+    B <- length(tt)
+    pp <- pp / sum(pp)
+    Ebayes <- sum(pp * tt) #Bayes posterior estimate
+    abar <- as.vector(pp * aa)
+    ttt <- tt - Ebayes; aaa <- t(t(aa) - abar)
+    sdbayes <- sum(pp * ttt^2)^.5
+    covhat <- ttt * (pp * aaa)  #covhat as in (3.10)
+    sdfreq <- sqrt(covhat %*% V %*% t(covhat)) #as in (3.11) or Theorem 1
+
+    if (var(pp) > 0) {#internal cv (3.12), from bootstrap resamples
+        qq <- tt * pp; ss <- qq / mean(qq) - pp / mean(pp)
+        cv <- sqrt(sum(ss^2)) / B
+        v <- c(Ebayes, sdfreq, cv, sdbayes)
+        names(v) <- c("Ebayes", "sdfreq", "cv", "sdbayes")
+        return(v)
+    }
+
+    v <- c(Ebayes, sdfreq, sdbayes)
+    names(v) <- c("Ebayes", "sdfreq", "sdbayes")
+    v
+}
+
+```
+
+Now lets run our MCMC samples to estimate $\hat{\theta}$ the frequentist standard deviations of Bayes estimates for patient 125.
+
+```{r, warning= FALSE}
+freqaccuracy <- freqacc(samples$batch[,1],strmat, pp=rep(1,10000))
+```
+```
+    Ebayes     sdfreq    sdbayes 
+-0.1095433  0.8981248  0.9211159
+```
+ The Bayes posterior estimate $\hat{\theta}$ is `Ebayes = -0.1095433` and the delta method frequenist standard deviation $$\hat{sd} = [\hat{cov^\intercal} V_\hat{\alpha} \hat{cov}]^\frac{1}{2}$$ is `sdfreq = 0.8981248` which id close to the Bayesian standard deviation.
+ 
+### References :
+[1] Efron, Bradley : Frequentist accuracy of Bayesian estimates, J. R. Statist. Soc. B (2015) 77, Part 3, pp. 617–646
+[2] Jeffreys, Harold : An Invariant Form for the Prior Probability in Estimation Problems . Proceedings of the Royal Society of London. Series A, Mathematical and Physical Sciences. 186 (1007): 453–461. doi:10.1098/rspa.1946.0056.
+[3] WIREs Comput Stat 2015, 7:185–193. doi: 10.1002/wics.1352.
+[4] Barbieri, Maria Maddalena; Berger, James O. Optimal predictive model selection. Ann. Statist. 32 (2004), no. 3, 870--897. doi:10.1214/009053604000000238. http://projecteuclid.org/euclid.aos/1085408489.
+[5] Bradley Efron, Trevor Hastie, Iain Johnstone and Robert Tibshirani (2004) "Least Angle Regression," Annals of Statistics (with discussion), 407-499.  
+[6] Park,Trevor and Casella,George : The Bayesian Lasso.American Statistical Association
+June 2008, Vol. 103, No. 482, Theory and Methods DOI 10.1198/016214508000000337.  
+[7]Tibshirani, Robert. "Regression shrinkage and selection via the lasso." Journal of the Royal Statistical Society. Series B (Methodological) (1996): 267-288.  
+[8]http://statweb.stanford.edu/~ckirby/brad/papers/jrss/.
