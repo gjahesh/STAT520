@@ -1,21 +1,11 @@
----
-title: "Frequentist accuracy of Bayesian Estimates"
-author: "Golnaz Jahesh"
-date: "April 16, 2017"
-output:
-  html_document:
-    fig_caption: yes
-    highlight: default
-    keep_md: yes
-    theme: readable
----
+# Frequentist accuracy of Bayesian Estimates
+Golnaz Jahesh  
+April 16, 2017  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-options(knitr.table.format = 'markdown')
-```
 
-```{r}
+
+
+```r
 suppressPackageStartupMessages(library(care))
 library(stats)
 library(mcmc)
@@ -90,13 +80,43 @@ Diabetes data (10 variables i.e predictors, 442 measurements) was used in the st
 
 Lets import the data first:
 
-```{r}
+
+```r
 ddat <- read.delim2("~/Documents/STAT520/FinalProject/data/diabetes.csv", header=TRUE, sep=",",row.names = NULL, stringsAsFactors = FALSE)
 ddat <- as.data.frame(sapply(ddat, as.numeric))
 ddat$X <- NULL
 dim(ddat)
+```
+
+```
+## [1] 442  11
+```
+
+```r
 str(ddat)
+```
+
+```
+## 'data.frame':	442 obs. of  11 variables:
+##  $ age: num  0.03808 -0.00188 0.0853 -0.08906 0.00538 ...
+##  $ sex: num  0.0507 -0.0446 0.0507 -0.0446 -0.0446 ...
+##  $ bmi: num  0.0617 -0.0515 0.0445 -0.0116 -0.0364 ...
+##  $ map: num  0.02187 -0.02633 -0.00567 -0.03666 0.02187 ...
+##  $ tc : num  -0.04422 -0.00845 -0.0456 0.01219 0.00393 ...
+##  $ ldl: num  -0.0348 -0.0192 -0.0342 0.025 0.0156 ...
+##  $ hdl: num  -0.0434 0.07441 -0.03236 -0.03604 0.00814 ...
+##  $ tch: num  -0.00259 -0.03949 -0.00259 0.03431 -0.00259 ...
+##  $ ltg: num  0.01991 -0.06833 0.00286 0.02269 -0.03199 ...
+##  $ glu: num  -0.01765 -0.0922 -0.02593 -0.00936 -0.04664 ...
+##  $ y0 : num  -0.0209 -1.4243 -0.2056 0.9947 -0.3164 ...
+```
+
+```r
 colnames(ddat)
+```
+
+```
+##  [1] "age" "sex" "bmi" "map" "tc"  "ldl" "hdl" "tch" "ltg" "glu" "y0"
 ```
 
 The last column is the response where $y0$ = disease progression at one year.the predictors.
@@ -108,17 +128,41 @@ Where $X$ is the $n \times p$ structure matrix .In this example n=442 (number of
 
 Also $y_0$ is the vector of 442 responses as shown below:
 
-```{r, warning= FALSE}
+
+```r
 head(ddat$y0)
+```
+
+```
+## [1] -0.02093069 -1.42433105 -0.20558863  0.99468800 -0.31638339 -1.01808357
 ```
 
 **Note** : `library(care)` also has this description data `efron2004`.
 
-```{r}
+
+```r
 data(efron2004)
 dim(efron2004$x)
+```
+
+```
+## [1] 442  10
+```
+
+```r
 colnames(efron2004$x)
+```
+
+```
+##  [1] "age" "sex" "bmi" "bp"  "s1"  "s2"  "s3"  "s4"  "s5"  "s6"
+```
+
+```r
 length(efron2004$y)
+```
+
+```
+## [1] 442
 ```
 
 `efron2004$x` is a 422 x 10 matrix containing the measurements of the explanatory variables (age, sex, body mass, etc.). The rows contain the samples and the columns the variables. `efron2004$y` contains the response.  
@@ -137,7 +181,8 @@ Basically $\gamma = t(\mu)$ is the parameter of interest with $\hat{\theta}$ bei
 
 In the following function `logdensity()` implements the liner model mentioned above, in our example B=10.  
 
-```{r}
+
+```r
 alpha = rep(1,10)
 
 logdensity <- function(alpha){
@@ -154,16 +199,37 @@ return(-final_val)
 }
 
 logdensity(alpha)
+```
+
+```
+##           [,1]
+## [1,] -386.2336
+```
+
+```r
 #Markov chain Monte Carlo for continuous random vector using a Metropolis algorithm.
 samples <- metrop(logdensity, rep(0, 10), 20000)
+```
+
+```
+## Note: no visible binding for global variable 'y0' 
+## Note: no visible binding for global variable 'y0'
+```
+
+```r
 theta_hat <- apply(samples$batch, 2, mean)
 theta_hat
+```
 
-```  
+```
+##  [1] -0.08453502 -3.65457008  9.67901437  5.54335075 -2.32756571
+##  [6] -0.51077065 -3.16676981  1.61058558  9.17108249  1.08444860
+```
 
 The following function `glogdensity()` calculates the posterior mode of $\hat{\alpha}_\lambda$ as described above :  
 
-```{r}
+
+```r
 glogdensity <- function(alpha, i){
   xdat <- subset(ddat,select = -y0)
   ydat <- as.matrix(subset(ddat,select = y0))
@@ -174,13 +240,12 @@ glogdensity <- function(alpha, i){
   temp <- alpha * err[i] + lambda*sign(alpha)
   return(-temp)
 } 
-
 ```
 
 The following function `strmat()` constructs the structure matrix $X$, considering estimating the diabetes progression for patient 125, because this patient falls near the center of the y response scale:  
 
-```{r}
 
+```r
 strmat <- matrix(, nrow = 10000, ncol = 10)
 for(row in 1:10000){
   strmat[row, ] <- glogdensity(samples$batch[row,],125)
@@ -212,7 +277,8 @@ The parameters of function `freqacc()` is described below :
     ##    estimate of standard deviation of Ebayes.  B.Efron 2/8/14
 
 
-```{r}
+
+```r
 freqacc <- function(tt, aa, pp=rep(1,B), V, sw=0) {
     
     if (missing(V)) V <- solve(var(aa)) #only applies in bootstrap case.
@@ -237,12 +303,12 @@ freqacc <- function(tt, aa, pp=rep(1,B), V, sw=0) {
     names(v) <- c("Ebayes", "sdfreq", "sdbayes")
     v
 }
-
 ```
 
 Now lets run our MCMC samples to estimate $\hat{\theta}$ the frequentist standard deviations of Bayes estimates for patient 125.
 
-```{r, warning= FALSE}
+
+```r
 freqaccuracy <- freqacc(samples$batch[,1],strmat, pp=rep(1,10000))
 ```
 ```
